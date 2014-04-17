@@ -21,6 +21,7 @@ from serialLedLib import *
 from PIL import Image
 from time import sleep
 import argparse
+import sys
 
 def argParser():
 
@@ -35,13 +36,14 @@ def argParser():
 	p.add_argument( "-o", "--overlay", dest="overlay", action="store_const", default=False, const=True, help="Overlay new layer on old.")
 	
 	p.add_argument( "-b", "--background", dest="back", default="FFFFFF", metavar="1F2E3D", help="Backround color.")
+	p.add_argument( "-r", "--reduced", dest="reduced", default="1", metavar="4", help="Divide light by this.")
 	
 	return vars(p.parse_args())
 
 def hex2rgb(s):
-	red =  int(s[0], 16)<<8 | int(s[1], 16)
-	green = int(s[2], 16)<<8 | int(s[3], 16)
-	blue = int(s[4], 16)<<8 | int(s[5], 16)
+	red =  int(s[0], 16)<<4 | int(s[1], 16)
+	green = int(s[2], 16)<<4 | int(s[3], 16)
+	blue = int(s[4], 16)<<4 | int(s[5], 16)
 	return (red, green, blue)
 
 if __name__ == '__main__':
@@ -69,11 +71,11 @@ if __name__ == '__main__':
 		temp = gif.convert("RGBA")
 		output.paste(temp, mask=temp.split()[3])
 
-		pixdata = output.convert("RGB").load()		
+		pixdata = output.convert("RGB").load()	
 		leds.send("C");
 		for y in range(0, leds.height):
 			for x in range(0, leds.width):
-				leds.send("S",pixdata[x,y])
+				leds.send("S",map(lambda x: int(x/float(arg["reduced"])), pixdata[x,y]))
 		leds.send("D");
 	
 		try:
