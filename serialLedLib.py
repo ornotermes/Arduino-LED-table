@@ -28,9 +28,10 @@ class serialLed:
 		self.serial = serial.Serial(port, 9600, timeout = 1)
 		self.sio = io.TextIOWrapper(io.BufferedRWPair(self.serial, self.serial))
 		self.serial.write("?")
+		sleep(0.5)
 		response = self.sio.readline().split(",");
 		if ( response[0] != identifier ):
-			raise Exception('Device not compatible, expected %s but got %s' % identifier, response[0])
+			raise Exception('Serial device did not give expected response!')
 		for i in range(1, len(response)):
 			operand = response[i][0]
 			if(operand == "W"):
@@ -42,8 +43,7 @@ class serialLed:
 		if cmd in ("C", "c", "D", "d"):
 			self.serial.write(cmd)
 			self.sio.flush()
-			while(self.serial.read() != "K"):
-				pass
+			self.serial.read(1)
 		if cmd in ("G", "g"):
 			self.serial.write("%s%s%s" % (cmd, chr(data[0]), chr(data[1])))
 		if cmd in ("S", "s"):
